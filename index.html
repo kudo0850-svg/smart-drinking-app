@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Smart AUDIT-K Care</title>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#0F172A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AUDIT-K Care" />
+
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%230F172A'/%3E%3Cpath d='M64 22c-14 0-26 11-26 25 0 20 26 45 26 45s26-25 26-45c0-14-12-25-26-25z' fill='%23FF7F50'/%3E%3Ccircle cx='64' cy='47' r='11' fill='white'/%3E%3C/svg%3E" />
+
+  <link rel="manifest" href='data:application/manifest+json,{
+    "name":"Smart AUDIT-K Care",
+    "short_name":"AUDIT-K",
+    "start_url":"./",
+    "display":"standalone",
+    "background_color":"#F8FAFC",
+    "theme_color":"#0F172A",
+    "icons":[
+      {
+        "src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 128 128%27%3E%3Crect width=%27128%27 height=%27128%27 rx=%2728%27 fill=%27%230F172A%27/%3E%3Cpath d=%27M64 22c-14 0-26 11-26 25 0 20 26 45 26 45s26-25 26-45c0-14-12-25-26-25z%27 fill=%27%23FF7F50%27/%3E%3Ccircle cx=%2764%27 cy=%2747%27 r=%2711%27 fill=%27white%27/%3E%3C/svg%3E",
+        "sizes":"128x128",
+        "type":"image/svg+xml"
+      }
+    ]
+  }' />
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    html, body {
+      height: 100%;
+      background: #f8fafc;
+      overscroll-behavior: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .safe-bottom {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+    }
+
+    .tab-active {
+      color: #0f172a;
+      background: linear-gradient(135deg, #ff7f50 0%, #ff9966 100%);
+      box-shadow: 0 8px 20px rgba(255,127,80,0.25);
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(14px);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0px); }
+    }
+
+    .calendar-day {
+      min-height: 58px;
+    }
+
+    .progress-glow {
+      box-shadow: 0 0 20px rgba(255,127,80,0.4);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50">
+  <div class="max-w-md mx-auto min-h-screen relative safe-bottom">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-20 bg-slate-900 text-white px-5 pt-6 pb-5 rounded-b-[28px] shadow-xl">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-black tracking-tight">Smart AUDIT-K</h1>
+          <p class="text-slate-300 text-sm mt-1">건전 음주 & 회복 추적 시스템</p>
+        </div>
+
+        <div class="w-14 h-14 rounded-2xl bg-orange-400/20 flex items-center justify-center border border-orange-300/20">
+          <i data-lucide="shield-plus" class="w-7 h-7 text-orange-300"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEW 1 -->
+    <main id="view-audit" class="p-5 space-y-5 fade-in">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+            <i data-lucide="clipboard-list" class="text-blue-800 w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="font-bold text-lg">AUDIT-K 선별검사</h2>
+            <p class="text-sm text-slate-500">한국형 알코올 사용 습관 진단</p>
+          </div>
+        </div>
+
+        <div id="audit-questions" class="space-y-6"></div>
+
+        <button id="audit-submit"
+          class="w-full mt-6 bg-slate-900 text-white py-4 rounded-2xl font-bold active:scale-[0.98] transition">
+          진단하기
+        </button>
+      </div>
+
+      <div id="audit-result" class="hidden"></div>
+    </main>
+
+    <!-- VIEW 2 -->
+    <main id="view-tracker" class="hidden p-5 space-y-5 fade-in">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-5">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
+            <i data-lucide="timer-reset" class="text-orange-600 w-6 h-6"></i>
+          </div>
+
+          <div>
+            <h2 class="font-bold text-lg">알코올 분해 추적기</h2>
+            <p class="text-sm text-slate-500">Widmark 공식 기반 계산</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-semibold text-slate-700">성별</label>
+            <div class="grid grid-cols-2 gap-3 mt-2">
+              <button class="gender-btn bg-blue-100 text-blue-900 py-3 rounded-2xl font-bold border-2 border-blue-500" data-gender="male">
+                남성
+              </button>
+              <button class="gender-btn bg-slate-100 text-slate-600 py-3 rounded-2xl font-bold border-2 border-transparent" data-gender="female">
+                여성
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold text-slate-700">체중 (kg)</label>
+            <input id="weight-input" type="number" placeholder="예: 70"
+              class="w-full mt-2 px-4 py-4 rounded-2xl border border-slate-200 outline-none focus:border-orange-400">
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold text-slate-700">술 종류</label>
+            <select id="drink-type"
+              class="w-full mt-2 px-4 py-4 rounded-2xl border border-slate-200 bg-white">
+              <option value="64">소주 1병 (약 64g)</option>
+              <option value="28">맥주 500ml 2캔 (약 28g)</option>
+              <option value="16">와인 2잔 (약 16g)</option>
+              <option value="40">위스키 4잔 (약 40g)</option>
+              <option value="80">폭음 수준 (약 80g)</option>
+            </select>
+          </div>
+
+          <button id="start-tracker"
+            class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold active:scale-[0.98] transition">
+            알코올 분해 시작
+          </button>
+        </div>
+      </div>
+
+      <div id="tracker-result" class="hidden bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <p class="text-sm text-slate-500">예상 최고 BAC</p>
+            <h3 id="bac-result" class="text-3xl font-black text-orange-500"></h3>
+          </div>
+
+          <div class="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center">
+            <i data-lucide="activity" class="w-8 h-8 text-orange-600"></i>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="font-semibold">회복 진행도</span>
+            <span id="progress-percent">0%</span>
+          </div>
+
+          <div class="w-full bg-slate-200 rounded-full h-5 overflow-hidden">
+            <div id="progress-bar"
+              class="bg-gradient-to-r from-orange-400 to-orange-500 h-full rounded-full progress-glow transition-all duration-1000"
+              style="width:0%">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 rounded-3xl p-5 text-center text-white">
+          <p class="text-slate-300 text-sm mb-2">완전 해독까지 남은 시간</p>
+          <div id="countdown" class="text-4xl font-black tracking-tight">00:00:00</div>
+        </div>
+
+        <div id="tracker-message"
+          class="mt-4 text-center text-sm text-slate-500">
+          간에서 알코올 분해가 진행 중입니다.
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 3 -->
+    <main id="view-calendar" class="hidden p-5 space-y-5 fade-in">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-slate-500">이번 달 금주</p>
+              <h3 id="sober-days" class="text-3xl font-black text-blue-800">0일</h3>
+            </div>
+            <i data-lucide="heart-handshake" class="w-8 h-8 text-blue-500"></i>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-slate-500">연속 금주</p>
+              <h3 id="streak-days" class="text-3xl font-black text-orange-500">0일</h3>
+            </div>
+            <i data-lucide="flame" class="w-8 h-8 text-orange-500"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="font-bold text-lg">건전 음주 캘린더</h2>
+            <p class="text-sm text-slate-500" id="month-label"></p>
+          </div>
+
+          <div class="flex gap-2">
+            <button id="mark-sober"
+              class="bg-blue-100 text-blue-800 px-4 py-2 rounded-xl text-sm font-bold">
+              금주 기록
+            </button>
+
+            <button id="mark-drink"
+              class="bg-orange-100 text-orange-700 px-4 py-2 rounded-xl text-sm font-bold">
+              음주 기록
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-7 gap-2 text-center text-xs font-bold text-slate-400 mb-3">
+          <div>일</div>
+          <div>월</div>
+          <div>화</div>
+          <div>수</div>
+          <div>목</div>
+          <div>금</div>
+          <div>토</div>
+        </div>
+
+        <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+      </div>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass border-t border-slate-200 px-4 py-3">
+      <div class="grid grid-cols-3 gap-3">
+        <button class="tab-btn tab-active rounded-2xl py-3 flex flex-col items-center justify-center text-sm font-bold"
+          data-target="audit">
+          <i data-lucide="clipboard-check" class="w-5 h-5 mb-1"></i>
+          진단
+        </button>
+
+        <button class="tab-btn rounded-2xl py-3 flex flex-col items-center justify-center text-sm font-bold text-slate-500"
+          data-target="tracker">
+          <i data-lucide="timer" class="w-5 h-5 mb-1"></i>
+          추적기
+        </button>
+
+        <button class="tab-btn rounded-2xl py-3 flex flex-col items-center justify-center text-sm font-bold text-slate-500"
+          data-target="calendar">
+          <i data-lucide="calendar-days" class="w-5 h-5 mb-1"></i>
+          캘린더
+        </button>
+      </div>
+    </nav>
+  </div>
+
+<script>
+  lucide.createIcons();
+
+  const views = {
+    audit: document.getElementById('view-audit'),
+    tracker: document.getElementById('view-tracker'),
+    calendar: document.getElementById('view-calendar')
+  };
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('tab-active');
+        b.classList.add('text-slate-500');
+      });
+
+      btn.classList.add('tab-active');
+      btn.classList.remove('text-slate-500');
+
+      Object.values(views).forEach(v => v.classList.add('hidden'));
+
+      views[btn.dataset.target].classList.remove('hidden');
+    });
+  });
+
+  const auditQuestions = [
+    {
+      q: "1. 얼마나 자주 술을 마십니까?",
+      options: [
+        ["전혀 안 마심", 0],
+        ["월 1회 이하", 1],
+        ["주 2~4회", 2],
+        ["주 4회 이상", 4]
+      ]
+    },
+    {
+      q: "2. 한 번에 얼마나 많이 마십니까?",
+      options: [
+        ["1~2잔", 0],
+        ["3~4잔", 1],
+        ["5~6잔", 2],
+        ["7잔 이상", 4]
+      ]
+    },
+    {
+      q: "3. 폭음(과음)을 얼마나 자주 합니까?",
+      options: [
+        ["없음", 0],
+        ["월 1회", 1],
+        ["주 1회", 2],
+        ["주 2회 이상", 4]
+      ]
+    },
+    {
+      q: "4. 음주 후 죄책감이나 후회를 느낀 적이 있습니까?",
+      options: [
+        ["없음", 0],
+        ["가끔", 1],
+        ["자주", 2],
+        ["매우 자주", 4]
+      ]
+    }
+  ];
+
+  const auditContainer = document.getElementById('audit-questions');
+
+  auditQuestions.forEach((item, idx) => {
+    const block = document.createElement('div');
+
+    block.innerHTML = `
+      <div>
+        <h3 class="font-bold text-slate-800 mb-3">${item.q}</h3>
+
+        <div class="space-y-2">
+          ${item.options.map((opt, i) => `
+            <label class="flex items-center gap-3 p-3 rounded-2xl border border-slate-200 cursor-pointer">
+              <input type="radio" name="q${idx}" value="${opt[1]}" class="w-5 h-5 accent-orange-500">
+              <span>${opt[0]}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    auditContainer.appendChild(block);
+  });
+
+  document.getElementById('audit-submit').addEventListener('click', () => {
+    let total = 0;
+
+    for (let i = 0; i < auditQuestions.length; i++) {
+      const checked = document.querySelector(`input[name="q${i}"]:checked`);
+
+      if (checked) {
+        total += Number(checked.value);
+      }
+    }
+
+    const result = document.getElementById('audit-result');
+
+    let title = '';
+    let color = '';
+    let message = '';
+    let icon = '';
+
+    if (total <= 7) {
+      title = '정상 음주 위험군';
+      color = 'blue';
+      icon = 'badge-check';
+      message = '현재는 비교적 안전한 수준입니다. 하지만 규칙적인 절주 습관을 유지하는 것이 중요합니다.';
+    } else if (total <= 15) {
+      title = '위험 음주군';
+      color = 'orange';
+      icon = 'triangle-alert';
+      message = '절주가 권장됩니다. 음주 빈도와 폭음을 줄이는 생활 습관 관리가 필요합니다.';
+    } else {
+      title = '알코올 사용장애 의심군';
+      color = 'red';
+      icon = 'siren';
+      message = '전문 의료진 상담 및 체계적인 관리가 필요할 수 있습니다.';
+    }
+
+    result.className = `bg-${color}-50 border border-${color}-200 rounded-3xl p-5 fade-in`;
+    result.innerHTML = `
+      <div class="flex items-start gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-${color}-100 flex items-center justify-center">
+          <i data-lucide="${icon}" class="w-7 h-7 text-${color}-600"></i>
+        </div>
+
+        <div class="flex-1">
+          <p class="text-sm text-slate-500 mb-1">총 점수</p>
+          <h3 class="text-2xl font-black mb-2">${total}점 · ${title}</h3>
+          <p class="text-slate-700 leading-relaxed">${message}</p>
+        </div>
+      </div>
+    `;
+
+    result.classList.remove('hidden');
+    lucide.createIcons();
+  });
+
+  let selectedGender = 'male';
+
+  document.querySelectorAll('.gender-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedGender = btn.dataset.gender;
+
+      document.querySelectorAll('.gender-btn').forEach(b => {
+        b.classList.remove('bg-blue-100', 'text-blue-900', 'border-blue-500');
+        b.classList.add('bg-slate-100', 'text-slate-600', 'border-transparent');
+      });
+
+      btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-transparent');
+      btn.classList.add('bg-blue-100', 'text-blue-900', 'border-blue-500');
+    });
+  });
+
+  let timerInterval = null;
+
+  document.getElementById('start-tracker').addEventListener('click', () => {
+    const weight = Number(document.getElementById('weight-input').value);
+    const alcoholGrams = Number(document.getElementById('drink-type').value);
+
+    if (!weight || weight <= 0) {
+      alert('체중을 입력해주세요.');
+      return;
+    }
+
+    const ratio = selectedGender === 'male' ? 0.86 : 0.64;
+
+    const bac = alcoholGrams / (weight * ratio);
+    const bacPercent = (bac / 100).toFixed(3);
+
+    const hoursToRecover = bacPercent / 0.015;
+    const totalSeconds = Math.max(1, Math.floor(hoursToRecover * 3600));
+
+    document.getElementById('tracker-result').classList.remove('hidden');
+    document.getElementById('bac-result').textContent = `${bacPercent}%`;
+
+    let remaining = totalSeconds;
+
+    clearInterval(timerInterval);
+
+    function updateTimer() {
+      const hrs = Math.floor(remaining / 3600);
+      const mins = Math.floor((remaining % 3600) / 60);
+      const secs = remaining % 60;
+
+      document.getElementById('countdown').textContent =
+        `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+
+      const progress = ((totalSeconds - remaining) / totalSeconds) * 100;
+
+      document.getElementById('progress-bar').style.width = `${progress}%`;
+      document.getElementById('progress-percent').textContent = `${Math.floor(progress)}%`;
+
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+
+        document.getElementById('countdown').textContent = '00:00:00';
+        document.getElementById('progress-bar').style.width = '100%';
+        document.getElementById('progress-percent').textContent = '100%';
+
+        document.getElementById('tracker-message').innerHTML = `
+          <div class="bg-blue-50 text-blue-800 rounded-2xl p-4 font-bold">
+            신체 회복 완료! 완전 정화되었습니다.
+          </div>
+        `;
+      } else {
+        document.getElementById('tracker-message').innerHTML =
+          `간에서 알코올 분해가 진행 중입니다.`;
+      }
+
+      remaining--;
+    }
+
+    updateTimer();
+
+    timerInterval = setInterval(updateTimer, 1000);
+  });
+
+  const STORAGE_KEY = 'auditk-calendar-data';
+
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  function getData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) return JSON.parse(saved);
+
+    const today = new Date();
+
+    const dummy = {};
+
+    const d1 = new Date(today);
+    d1.setDate(today.getDate() - 1);
+
+    const d2 = new Date(today);
+    d2.setDate(today.getDate() - 2);
+
+    const d3 = new Date(today);
+    d3.setDate(today.getDate() - 3);
+
+    dummy[formatDate(today)] = 'sober';
+    dummy[formatDate(d1)] = 'drink';
+    dummy[formatDate(d2)] = 'sober';
+    dummy[formatDate(d3)] = 'drink';
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dummy));
+
+    return dummy;
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function renderCalendar() {
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    document.getElementById('month-label').textContent =
+      `${year}년 ${month + 1}월`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+
+    const data = getData();
+
+    for (let i = 0; i < firstDay; i++) {
+      const blank = document.createElement('div');
+      grid.appendChild(blank);
+    }
+
+    for (let day = 1; day <= totalDays; day++) {
+      const date = new Date(year, month, day);
+      const key = formatDate(date);
+
+      const state = data[key];
+
+      const cell = document.createElement('div');
+
+      cell.className =
+        'calendar-day bg-slate-50 rounded-2xl flex flex-col items-center justify-center border border-slate-100 relative';
+
+      let stamp = '';
+
+      if (state === 'drink') {
+        stamp = `
+          <div class="absolute bottom-1 right-1 text-orange-500">
+            <i data-lucide="wine" class="w-4 h-4"></i>
+          </div>
+        `;
+      }
+
+      if (state === 'sober') {
+        stamp = `
+          <div class="absolute bottom-1 right-1 text-blue-600">
+            <i data-lucide="heart" class="w-4 h-4"></i>
+          </div>
+        `;
+      }
+
+      cell.innerHTML = `
+        <div class="font-bold text-sm">${day}</div>
+        ${stamp}
+      `;
+
+      grid.appendChild(cell);
+    }
+
+    lucide.createIcons();
+    updateStats();
+  }
+
+  function updateStats() {
+    const data = getData();
+    const now = new Date();
+
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    let soberCount = 0;
+
+    Object.entries(data).forEach(([date, state]) => {
+      const d = new Date(date);
+
+      if (
+        d.getMonth() === currentMonth &&
+        d.getFullYear() === currentYear &&
+        state === 'sober'
+      ) {
+        soberCount++;
+      }
+    });
+
+    document.getElementById('sober-days').textContent = `${soberCount}일`;
+
+    let streak = 0;
+
+    for (let i = 0; i < 365; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      const key = formatDate(d);
+
+      if (data[key] === 'sober') {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    document.getElementById('streak-days').textContent = `${streak}일`;
+  }
+
+  document.getElementById('mark-sober').addEventListener('click', () => {
+    const data = getData();
+
+    data[formatDate(new Date())] = 'sober';
+
+    saveData(data);
+    renderCalendar();
+  });
+
+  document.getElementById('mark-drink').addEventListener('click', () => {
+    const data = getData();
+
+    data[formatDate(new Date())] = 'drink';
+
+    saveData(data);
+    renderCalendar();
+  });
+
+  renderCalendar();
+
+  if ('serviceWorker' in navigator) {
+    const swBlob = new Blob([`
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => self.clients.claim());
+      self.addEventListener('fetch', () => {});
+    `], { type: 'text/javascript' });
+
+    const swUrl = URL.createObjectURL(swBlob);
+
+    navigator.serviceWorker.register(swUrl);
+  }
+</script>
+</body>
+</html>
