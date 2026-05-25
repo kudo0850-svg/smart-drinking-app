@@ -3,31 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Smart AUDIT-K Care</title>
+  <title>Drink Safer</title>
 
-  <!-- PWA -->
-  <meta name="theme-color" content="#0F172A" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="AUDIT-K Care" />
+<!-- 기존 theme-color 변경 -->
+<meta name="theme-color" content="#065F46" />
 
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%230F172A'/%3E%3Cpath d='M64 22c-14 0-26 11-26 25 0 20 26 45 26 45s26-25 26-45c0-14-12-25-26-25z' fill='%23FF7F50'/%3E%3Ccircle cx='64' cy='47' r='11' fill='white'/%3E%3C/svg%3E" />
+<!-- 기존 apple-mobile-web-app-title 변경 -->
+<meta name="apple-mobile-web-app-title" content="DrinkSafer" />
 
-  <link rel="manifest" href='data:application/manifest+json,{
-    "name":"Smart AUDIT-K Care",
-    "short_name":"AUDIT-K",
-    "start_url":"./",
-    "display":"standalone",
-    "background_color":"#F8FAFC",
-    "theme_color":"#0F172A",
-    "icons":[
-      {
-        "src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 128 128%27%3E%3Crect width=%27128%27 height=%27128%27 rx=%2728%27 fill=%27%230F172A%27/%3E%3Cpath d=%27M64 22c-14 0-26 11-26 25 0 20 26 45 26 45s26-25 26-45c0-14-12-25-26-25z%27 fill=%27%23FF7F50%27/%3E%3Ccircle cx=%2764%27 cy=%2747%27 r=%2711%27 fill=%27white%27/%3E%3C/svg%3E",
-        "sizes":"128x128",
-        "type":"image/svg+xml"
-      }
-    ]
-  }' />
+<!-- 기존 apple-touch-icon 전체 교체 -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='42' fill='%23065F46'/%3E%3Ctext x='50%25' y='54%25' font-size='68' font-family='Arial, sans-serif' font-weight='700' text-anchor='middle' fill='white'%3EDS%3C/text%3E%3C/svg%3E" />
+
+<!-- 기존 manifest 전체 교체 -->
+<link rel="manifest" href='data:application/manifest+json,{
+  "name":"DrinkSafer",
+  "short_name":"DrinkSafer",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#F8FAFC",
+  "theme_color":"#065F46",
+  "icons":[
+    {
+      "src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 180 180%27%3E%3Crect width=%27180%27 height=%27180%27 rx=%2742%27 fill=%27%23065F46%27/%3E%3Ctext x=%2750%25%27 y=%2754%25%27 font-size=%2768%27 font-family=%27Arial,sans-serif%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27white%27%3EDS%3C/text%3E%3C/svg%3E",
+      "sizes":"180x180",
+      "type":"image/svg+xml",
+      "purpose":"any maskable"
+    }
+  ]
+}' />
 
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
